@@ -5,7 +5,7 @@ module minimize
   REAL(DP) :: eps=epsilon(1.0_DP)
 
 contains
-    SUBROUTINE amoeba(p,y,ftol,func,iter)
+    SUBROUTINE amoeba(p,y,ftol,func,iter,iter_max)
         USE nrtype; USE utilities, ONLY : assert_eq,imaxloc,iminloc,nrerror,swap
         IMPLICIT NONE
         REAL(dp), DIMENSION(:,:), INTENT(INOUT) :: p ! vertices. If we have n vertices, then we must be
@@ -22,8 +22,9 @@ contains
                 REAL(DP) :: func
             END FUNCTION func
         END INTERFACE
-        INTEGER(I4B), INTENT(OUT) :: iter            ! the number of iterations required
-        INTEGER(I4B), PARAMETER :: ITMAX=5000
+        INTEGER(I4B), INTENT(OUT) :: iter ! iterations counter
+        INTEGER(I4B), INTENT(IN) :: iter_max   ! max number of iterations allowed 
+        INTEGER(I4B), PARAMETER :: ITMAX=5000  ! the max number of iterations allowed
         REAL(dp), PARAMETER :: TINY=1.0e-10
         INTEGER(I4B) :: ihi,ndim
         REAL(dp), DIMENSION(size(p,2)) :: psum

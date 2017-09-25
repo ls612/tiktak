@@ -287,11 +287,12 @@ PROGRAM GlobalSearch
 
     ! save characteristics of the run in monteCarloGOPA file (algorithm used,
     ! number of sobol points etc...)
-!    open(unit = 111, file = "monteCarloGOPA.dat", position = "append", STATUS='unknown')
-    call myopen(unit=fileDesc, file="monteCarloGOPA.dat",status='unknown', IOSTAT=openStat, POSITION='append', ACTION='write')
+    open(unit = 111, file = "monteCarloGOPA.dat", position = "append", STATUS='unknown')
+    !call myopen(unit=fileDesc, file="monteCarloGOPA.dat",status='unknown', IOSTAT=openStat, POSITION='append', ACTION='write')
     !we write out algorithm indicator (writes 1 or 0 where 1=amoeba and 0=dfls, then we write function evaluation counter, cputime,
     !number of sobols that are kept to start local searches, and number of sobols overall that are drawn.
-    write(111,*) alg, fe_counter, cpuTime, p_maxpoints, p_qr_ndraw, nsim, nhhsim, p_nx, p_init(1), p_init(2), p_init(3), p_init(4), p_init(5), p_init(6), p_init(7)
+    write(111,*) alg, fe_counter, cpuTime, p_maxpoints, p_qr_ndraw, nsim, nhhsim, p_nx, p_init(1), &
+    &  p_init(2), p_init(3), p_init(4), p_init(5), p_init(6), p_init(7)
 !    close(111)
     call myclose(fileDesc)
 
@@ -461,7 +462,7 @@ contains
         IMPLICIT NONE
         REAL(DP), intent(in) :: tolf
         INTEGER(I4B), intent(in) :: itmax
-        INTEGER(I4B) :: ia
+        INTEGER(I4B) :: ia, iterations_nb
         REAL(DP), DIMENSION(p_nx), intent(inout) :: amoeba_pt
         REAL(DP), DIMENSION(p_nx,p_nx+1) ::  x
         REAL(DP), DIMENSION(p_nx+1,p_nx) :: xT
@@ -477,8 +478,8 @@ contains
             xT(ia,:)=temp
         end do
 
-        ia=itmax
-        call amoeba(xT,fnVals,tolf,objFun,ia)
+        !ia=itmax
+        call amoeba(xT,fnVals,tolf,objFun,iterations_nb,itmax)
         ia=minloc(fnVals,1)
         amoeba_pt = xT(ia,:)
     END SUBROUTINE runAmoeba
