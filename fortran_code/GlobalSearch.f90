@@ -1001,14 +1001,14 @@ contains
 
         IF (temp == 0) THEN
             print *,"Invoke with:"
-            print *,"               ./genericSearch < -1 | <0|2> configfile | 1>  [(a)moeba | (d)fpmin | (b)obyqa]"
+            print *,"               ./genericSearch < -1 | <0|2> configfile | 1>  [(a)moeba | (b)dfls]"
             print *,"where"
             print *,"              -1 = stop all instances"
             print *,"               0 = cold start"
             print *,"               1 = warm start"
             print *,"               2 = update points"
             print *,"      configfile = intial parameters. Mandatory if cold start or point update"
-            print *,"           a,d,b = search algorithm. Optional, default is bobyqa"
+            print *,"           a,b = search algorithm. Optional, default is b=dfls"
             stop 0
         END IF
 
