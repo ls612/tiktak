@@ -53,7 +53,13 @@ contains
                     call swap(p(1,:),p(ilo,:))
                     RETURN
                 end if
-                if (iter >= ITMAX) call nrerror('ITMAX exceeded in amoeba')
+                ! if (iter >= ITMAX) call nrerror('ITMAX exceeded in amoeba')
+                if (iter >= ITMAX) then
+                    write(*,*) 'reached max number of evaluations in amoeba; returning best result so far'
+                    call swap(y(1),y(ilo))
+                    call swap(p(1,:),p(ilo,:))
+                    RETURN
+                end if
                 ytry=amotry(-1.0_dp)
                 iter=iter+1
                 if (ytry <= y(ilo)) then
