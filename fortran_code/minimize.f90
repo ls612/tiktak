@@ -24,7 +24,7 @@ contains
         END INTERFACE
         INTEGER(I4B), INTENT(OUT) :: iter ! iterations counter
         INTEGER(I4B), INTENT(IN) :: iter_max   ! max number of iterations allowed 
-        INTEGER(I4B), PARAMETER :: ITMAX=5000  ! the max number of iterations allowed
+        !INTEGER(I4B), PARAMETER :: ITMAX=5000  ! the max number of iterations allowed
         REAL(dp), PARAMETER :: TINY=1.0e-10
         INTEGER(I4B) :: ihi,ndim
         REAL(dp), DIMENSION(size(p,2)) :: psum
