@@ -1,8 +1,13 @@
-## Welcome to GitHub Pages
+## TIKTAK algorithm
 
-You can use the [editor on GitHub](https://github.com/antoinearnoud/tiktak/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+This website maintains the version of the TIKTAK algorithm described in our working paper, Arnoud, Guvenen, Kleineberg (2017).
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Description of the Algorithm
+The algorithm is written in Fortran. It is a global optimization algorithm. Given a function of `n` parameters, the algorithm runs the domain space and tries to find a global minimum. The power of the algorithm is that it can be easily parallelized without knowledge of any parallel language such as openMP or MPI.
+
+
+### Team
+The algorithm intially developped by Fatih Guvenen is tested by Antoine Arnoud, Tatjana Kleineberg and Fatih Guvenen against other commonly used algorithms.
 
 ### Markdown
 
