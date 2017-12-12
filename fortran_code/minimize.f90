@@ -54,7 +54,7 @@ contains
                     RETURN
                 end if
                 ! if (iter >= ITMAX) call nrerror('ITMAX exceeded in amoeba')
-                if (iter >= ITMAX) then
+                if (iter >= iter_max) then
                     write(*,*) 'reached max number of evaluations in amoeba; returning best result so far'
                     call swap(y(1),y(ilo))
                     call swap(p(1,:),p(ilo,:))
