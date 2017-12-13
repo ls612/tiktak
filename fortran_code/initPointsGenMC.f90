@@ -1,4 +1,4 @@
-PROGRAM GOPA_init_point
+PROGRAM initPointsGenMC
 
 	IMPLICIT NONE
 
@@ -8,11 +8,11 @@ PROGRAM GOPA_init_point
 	REAL, ALLOCATABLE	:: p_bound(:,:)
 	LOGICAL			:: parsedLine
 	INTEGER			:: i, jj
-	
+
 
 	! Read dimension and bounds from configfile
         open(UNIT=222, FILE="config.txt", STATUS='old', ACTION='read')
-        
+
 	!Parse the basic parameters in the first line
         parsedLine = .FALSE.
 	DO WHILE (parsedLine .eqv. .FALSE.)
@@ -46,13 +46,13 @@ PROGRAM GOPA_init_point
             END DO
         END DO
 
-	
+
 
 	! Generate 1000 initial points scaled to the bounds
 	do jj = 1,1000
 	  do i = 1,p_nx
 		! generate a random number between 0 and 1
-        CALL RANDOM_NUMBER(mynumber)        	
+        CALL RANDOM_NUMBER(mynumber)
 		! scale the number to the bounds
 		mynumber = mynumber * (p_bound(i,2) - p_bound(i,1)) + p_bound(i,1)
 		! write the scaled number in dat file
@@ -78,5 +78,3 @@ END PROGRAM
         !a_seed(i_seed)=dt_seed(8); a_seed(1)=dt_seed(8)*dt_seed(7)*dt_seed(6)
         !CALL RANDOM_SEED(put=a_seed)
         !DEALLOCATE(a_seed)
-        
-

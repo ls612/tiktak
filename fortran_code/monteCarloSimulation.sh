@@ -5,12 +5,17 @@
 echo "housekeeping..."
 
 # Remove any locked file
-rm -f *lock 
+rm -f *lock
 # Remove old libraries
 rm -f *.mod
 # Remove Montecarlo dat file
 rm -f monteCarloGOPAmin.dat
 rm -f monteCarloGOPA.dat
+
+###########################################################################################################
+echo "compiling random initial points in the domain space and saving them in init_points.dat file..."
+gfortran -O3 initPointsGenMC.f90 -o initPointsGenMC
+./initPointsGenMC
 
 
 ###########################################################################################################
@@ -68,8 +73,8 @@ done
 
 # copy everything in each folder and change config file appropriately
 for i in $(seq 1 $imp); do
-	
-	# overwrite starting point on config file 
+
+	# overwrite starting point on config file
 	#(using XX random starting points but always the same point for each step in performance profile)
 	for k in $(seq 1 $dim); do
 	  lineout=37+$dim+$k
@@ -80,7 +85,7 @@ for i in $(seq 1 $imp); do
 	# varying number of Sobol points
 	for j in $(seq 0 $length); do
  		n=${SobolList[$j]}   # number of sobols generated
-	 	m=$n/10	# number of sobols kept	
+	 	m=$n/10	# number of sobols kept
 
 	 #################################### bobyqa ###########################################
 	 # copy files in new folder
@@ -95,7 +100,7 @@ for i in $(seq 1 $imp); do
      # overwrite number of Sobol points generated / kept on config file
 	 echo "bobyqa dim7 sobol is $n, kept is $m and iter is" $i
 	 sed -i "28s/.*/7, 297, -1, ${n[@]}, ${m[@]}, 0, -1/g" config.txt
-	 	 
+
 	 # go back to original folder
 	 cd ../../../../fortran_code
 
@@ -114,7 +119,7 @@ for i in $(seq 1 $imp); do
       # overwrite number of Sobol points generated / kept on config file
 	echo "amoeba dim7 sobol is $n, kept is $m and iter is" $i
 	sed -i "28s/.*/7, 297, -1, ${n[@]}, ${m[@]}, 0, -1/g" config.txt
-	 	 
+
 	# go back to original folder
 	cd ../../../../fortran_code
 
@@ -128,13 +133,13 @@ cd ../results
 for i in $(seq 1 $imp); do
 	for j in $(seq 0 $length); do
  		n=${SobolList[$j]}
-	
+
 	 # go to new folder
 	 cd bobyqa_sobol$n/startpoint_$i/fortran_code
 
 	 # run minimization with Bobyqa algo on Yale cluster
 	 bsub -q $queue -W $timelimit ./GlobalSearch 0 config.txt b &
-	 
+
 	 # go back to folder results
 	 cd ../../../
 
@@ -143,7 +148,7 @@ for i in $(seq 1 $imp); do
 
 	 # run minimization with Amoeba algo on Yale cluster
 	 bsub -q $queue -W $timelimit ./GlobalSearch 0 config.txt a &
-	 
+
 	 # go back to folder results
 	 cd ../../../
 
