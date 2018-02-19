@@ -1,9 +1,0 @@
-#!/bin/bash
-
-#PBS -q batch
-#PBS -l nodes=1:ppn=2
-#PBS -l walltime=01:00:00
-#PBS -l mem=4gb
-
-cd $PBS_O_WORKDIR/
-./compile_only.sh
