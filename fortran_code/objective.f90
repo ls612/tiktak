@@ -10,7 +10,7 @@ use, intrinsic :: iso_c_binding, only: c_int
     Use nrtype
     implicit none
     PRIVATE
-    PUBLIC objFun, dfovec, initial0, GetData
+    PUBLIC objFun, dfovec, initial0, GetData, getPenalty
 
 
     interface
@@ -29,6 +29,28 @@ use, intrinsic :: iso_c_binding, only: c_int
 
 contains
 
+FUNCTION getPenalty(theta)
+!LS: new function for penalty processing
+use genericParams
+implicit none
+
+	REAL(DP),DIMENSION(p_nx),INTENT(IN) :: theta
+	REAL(DP),DIMENSION(p_nx)            :: pencons 
+	REAL(DP)                            :: penalty, getPenalty
+	integer :: ii
+	
+	! penalty
+    pencons=10.0d5
+    penalty=0.
+    do ii=1,p_nx
+        penalty = penalty + pencons(ii)*(min(0.D0,theta(ii)-p_bound(ii,1)))**2.D0
+        penalty = penalty + pencons(ii)*(max(0.D0,theta(ii)-p_bound(ii,2)))**2.D0
+    enddo
+
+	getPenalty = penalty
+	
+END FUNCTION getPenalty
+	
 FUNCTION objFun(theta)
 ! Sum of squares distance
 ! -------------------------------------------------------------------------
@@ -46,28 +68,10 @@ implicit none
 
     storeTheta=theta
 
-    ! penalty
-    pencons=10.0d5
-    penalty=0.
-    do ii=1,p_nx
-        penalty = penalty + pencons(ii)*(min(0.D0,theta(ii)-p_bound(ii,1)))**2.D0
-        penalty = penalty + pencons(ii)*(max(0.D0,theta(ii)-p_bound(ii,2)))**2.D0
-    enddo
-
     call dfovec(p_nx,p_nmom,theta,Fout)
 
-    ! Weighting matrix
-    W=0.
-    forall(ii=1:p_nmom) W(ii,ii)=1.
-    forall(ii=1:NmomCS) W(ii,ii)=.8
-    forall(ii=NmomCS+1:p_nmom) W(ii,ii)=.2
-
-    F(:,1) = Fout
-    FW = matmul(sqrt(W),F)
-    FoutW = FW(:,1)
-
-    objFun0=dot_product(FoutW,FoutW)
-    objFun = objFun0(1,1)+penalty
+    objFun0=dot_product(Fout,Fout)
+    objFun = objFun0(1,1)+getPenalty(theta)
 
 END FUNCTION objFun
 
@@ -156,7 +160,12 @@ use myParams
 use genericParams
 IMPLICIT NONE
 
-    INTEGER, INTENT(IN)     :: np, nm              
+    INTEGER, INTENT(IN)     :: np, nm          
+	!LS: New vars
+	integer :: ii
+    REAL(DP),DIMENSION(p_nmom,1)        :: F,FW
+    REAL(DP),DIMENSION(p_nmom,p_nmom)   :: W, Wsqr    
+	!LS: End New vars
     REAL(DP), DIMENSION(np), INTENT(IN)  :: x
     REAL(DP), DIMENSION(nm,1),INTENT(OUT) :: Fnout
     
@@ -209,6 +218,14 @@ IMPLICIT NONE
     ! -- DONE CACULATING FNOUT
     ! -----------------------------------------------------------------
 
+	!LS: Moved weighting into dfovec
+	W=0.
+    forall(ii=1:p_nmom) W(ii,ii)=1.
+    forall(ii=1:NmomCS) W(ii,ii)=.8
+    forall(ii=NmomCS+1:p_nmom) W(ii,ii)=.2
+
+    Fnout = matmul(sqrt(W),Fnout)
+	
     mytime=3;
     dur=myFortSleep(mytime);
 

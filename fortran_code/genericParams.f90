@@ -18,8 +18,8 @@ IMPLICIT NONE
     INTEGER(I4B), PARAMETER  :: p_nsmplx=100
         ! initialize the seed for random numbers
     INTEGER(I4B), PARAMETER :: p_SEED=314159265
-    REAL(DP), parameter :: p_tolf_amoeba= 1.0d-8 ! Amoeba variables
-    INTEGER(I4B), parameter :: p_itmax_amoeba=5000 ! Amoeba variables
+    REAL(DP), parameter :: p_tolf_amoeba= 1.0d-7 ! Amoeba variables -- LS changed from 10e-8 to other values
+    INTEGER(I4B), parameter :: p_itmax_amoeba=1000 ! Amoeba variables -- NOT USED
 
     INTEGER(I4B) :: fe_counter = 0
     REAL(DP) :: cpuTime = 0

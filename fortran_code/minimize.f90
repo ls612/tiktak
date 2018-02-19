@@ -5,7 +5,7 @@ module minimize
   REAL(DP) :: eps=epsilon(1.0_DP)
 
 contains
-    SUBROUTINE amoeba(p,y,ftol,func,iter,iter_max)
+    SUBROUTINE amoeba(p,y,ftol,func,iter)
         USE nrtype; USE utilities, ONLY : assert_eq,imaxloc,iminloc,nrerror,swap
         IMPLICIT NONE
         REAL(dp), DIMENSION(:,:), INTENT(INOUT) :: p ! vertices. If we have n vertices, then we must be
@@ -22,9 +22,8 @@ contains
                 REAL(DP) :: func
             END FUNCTION func
         END INTERFACE
-        INTEGER(I4B), INTENT(OUT) :: iter ! iterations counter
-        INTEGER(I4B), INTENT(IN) :: iter_max   ! max number of iterations allowed 
-        !INTEGER(I4B), PARAMETER :: ITMAX=5000  ! the max number of iterations allowed
+        INTEGER(I4B), INTENT(OUT) :: iter            ! the number of iterations required
+        INTEGER(I4B), PARAMETER :: ITMAX=5000
         REAL(dp), PARAMETER :: TINY=1.0e-10
         INTEGER(I4B) :: ihi,ndim
         REAL(dp), DIMENSION(size(p,2)) :: psum
@@ -53,13 +52,7 @@ contains
                     call swap(p(1,:),p(ilo,:))
                     RETURN
                 end if
-                ! if (iter >= ITMAX) call nrerror('ITMAX exceeded in amoeba')
-                if (iter >= iter_max) then
-                    write(*,*) 'reached max number of evaluations in amoeba; returning best result so far'
-                    call swap(y(1),y(ilo))
-                    call swap(p(1,:),p(ilo,:))
-                    RETURN
-                end if
+                if (iter >= ITMAX) call nrerror('ITMAX exceeded in amoeba')
                 ytry=amotry(-1.0_dp)
                 iter=iter+1
                 if (ytry <= y(ilo)) then
@@ -371,7 +364,7 @@ contains
       SUBROUTINE BOBYQB_H (N,NPT,X,XL,XU,RHOBEG,RHOEND,IPRINT,&
            MAXFUN,XBASE,XPT,FVAL,XOPT,GOPT,HQ,PQ,BMAT,ZMAT,NDIM,&
            SL,SU,XNEW,XALT,D,VLAG,W,mv)
-      use OBJECTIVE, only: dfovec
+      use OBJECTIVE, only: dfovec, getPenalty
       IMPLICIT double precision (A-H,O-Z)
       DIMENSION X(*),XL(*),XU(*),XBASE(*),XPT(NPT,*),FVAL(*),&
        XOPT(*),GOPT(*),HQ(*),PQ(*),BMAT(NDIM,*),ZMAT(NPT,*),&
@@ -784,7 +777,10 @@ contains
 !     f_value(mv,v_err,F) provides the value of the sum of the squres of the components of v_err(x)
 !     i.e. F = sum_{i=1}^{mv} v_err_i (x)^2
       call f_value(mv,v_err,F)
-!
+	  
+	  !LS: Add penalty to result
+	  F = F + getPenalty(x)
+
       IF (IPRINT .EQ. 3) THEN
           PRINT 400, NF,F,(X(I),I=1,N)
   400      FORMAT (/4X,'Function number',I6,'    F =',1PD18.10,&
@@ -1436,7 +1432,7 @@ contains
       SUBROUTINE PRELIM_H (N,NPT,X,XL,XU,RHOBEG,IPRINT,MAXFUN,XBASE,&
        XPT,FVAL,GOPT,HQ,PQ,BMAT,ZMAT,NDIM,SL,SU,NF,KOPT,&
        mv,HQV,GQV,PQV,FVAL_V,v_err,v_beg,FBEG)
-      use OBJECTIVE, only: dfovec
+      use OBJECTIVE, only: dfovec, getPenalty
 
       IMPLICIT double precision (A-H,O-Z)
       parameter (nmax = 100, mmax=3000)
@@ -1515,7 +1511,10 @@ contains
 !     f_value(mv,v_err,F) provides the value of the sum of the squres of the components of v_err(x)
 !     i.e. F = sum_{i=1}^{mv} v_err_i (x)^2
       call f_value(mv,v_err,F)
-!
+
+	  !LS: Add penalty to result
+	  F = F + getPenalty(x)
+	  
       IF (IPRINT .EQ. 3) THEN
           PRINT 70, NF,F,(X(I),I=1,N)
    70      FORMAT (/4X,'Function number',I6,'    F =',1PD18.10,&
@@ -1588,7 +1587,7 @@ contains
        FVAL,XOPT,GOPT,HQ,PQ,BMAT,ZMAT,NDIM,SL,SU,NF,DELTA,&
        KOPT,VLAG,PTSAUX,PTSID,W,&
        mv,HQV,GQV,PQV,FVAL_V,WV,v_err,v_sumpq,v_vquad,v_diff,v_temp)
-      use OBJECTIVE, only: dfovec
+      use OBJECTIVE, only: dfovec, getPenalty
 
       IMPLICIT double precision (A-H,O-Z)
       parameter (nmax = 100, mmax=3000, nptmax=2*nmax+1)
@@ -1926,7 +1925,10 @@ contains
 !     f_value(mv,v_err,F) provides the value of the sum of the squres of the components of v_err(x)
 !     i.e. F = sum_{i=1}^{mv} v_err_i (x)^2
       call f_value(mv,v_err,F)
-!
+
+	  !LS: Add penalty to result
+	  F = F + getPenalty(W)
+	  
       IF (IPRINT .EQ. 3) THEN
           PRINT 300, NF,F,(W(I),I=1,N)
   300     FORMAT (/4X,'Function number',I6,'    F =',1PD18.10,&
