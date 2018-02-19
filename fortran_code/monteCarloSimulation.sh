@@ -1,35 +1,6 @@
+#!/bin/bash
 # This script compiles the program, runs it and generates output
 # output is stored in monteCarloGOPAmin.dat and monteCarloGOPA.dat files for individual optimization
-
-###########################################################################################################
-echo "housekeeping..."
-
-# Remove any locked file
-rm -f *lock
-# Remove old libraries
-rm -f *.mod
-# Remove Montecarlo dat file
-rm -f monteCarloGOPAmin.dat
-rm -f monteCarloGOPA.dat
-
-###########################################################################################################
-echo "compiling random initial points in the domain space and saving them in init_points.dat file..."
-gfortran -O3 initPointsGenMC.f90 -o initPointsGenMC
-./initPointsGenMC
-
-
-###########################################################################################################
-echo "compiling..."
-
-#ifort -O3 -g -heap-arrays nrtype.f90 myParams.f90 stateControl.f90 genericParams.f90 utilities.f90 simplex.f90 objective.f90 minimize.f90 GlobalSearch.f90 -o GlobalSearch
-#ifort -m64 -g -debug all -heap-arrays nrtype.f90 stateControl.f90 genericParams.f90 simplex.f90 global.f90 objective_griewank.f90 utilities.f90 minimize.f90 GlobalSearch.f90 -o GlobalSearch
-gfortran -O3               nrtype.f90 myParams.f90 stateControl.f90 genericParams.f90 utilities.f90 simplex.f90 objective.f90 minimize.f90 GlobalSearch.f90 -o GlobalSearch
-
-if [ $? -ne 0 ]; then
-  echo "Errors compiling GlobalSearch"
-  exit
-fi
-
 
 ###########################################################################################################
 echo "running Monte Carlo..."
@@ -37,19 +8,17 @@ echo "running Monte Carlo..."
 #need to allow modifying txt file, otherwise cannot rewrite
 chmod u+x config.txt
 
-#declare variables
-declare -i n m dim lineout linein imp
+#cleanup some stuff
+echo "cleanup..."
+rm -rf ../results
 
-#declare -a SobolList
-dim=7
-SobolList=(100 200 300 400 500 600 700 800 900 1000 1250 1500 1750 2000)
-length=${#SobolList[@]}
+#BEGIN USER MODIFIABLE DATA
+dim=7 #Number of dimensions of the objective
+SobolList=(40 70 100 200 300 400 500 600 700 800) #List of quantities of sobol points to try
+length=${#SobolList[@]} 
 length=$((length-1)) # length of SobolList (minus 1 because indexation starts at 0)
-imp=50   # number of implementations
-
-# parameters for Yale Cluster
-queue="shared"
-timelimit="300:00"
+imp=10   # number of trials per quantity of sobol points
+#END USER MODIFIABLE DATA
 
 # create folder results
 mkdir ../results
@@ -73,19 +42,19 @@ done
 
 # copy everything in each folder and change config file appropriately
 for i in $(seq 1 $imp); do
-
-	# overwrite starting point on config file
+	
+	# overwrite starting point on config file 
 	#(using XX random starting points but always the same point for each step in performance profile)
 	for k in $(seq 1 $dim); do
-	  lineout=37+$dim+$k
-	  linein=($i-1)*$dim+$k
+	  lineout=$((37+$dim+$k))
+	  linein=$((($i-1)*$dim+$k))
 	  sed -i "${lineout}s/.*/`sed -n "${linein}p" init_points.dat`/g" config.txt
 	done
 
 	# varying number of Sobol points
 	for j in $(seq 0 $length); do
  		n=${SobolList[$j]}   # number of sobols generated
-	 	m=$n/10	# number of sobols kept
+	 	m=$((n/10))	# number of sobols kept	
 
 	 #################################### bobyqa ###########################################
 	 # copy files in new folder
@@ -100,7 +69,7 @@ for i in $(seq 1 $imp); do
      # overwrite number of Sobol points generated / kept on config file
 	 echo "bobyqa dim7 sobol is $n, kept is $m and iter is" $i
 	 sed -i "28s/.*/7, 297, -1, ${n[@]}, ${m[@]}, 0, -1/g" config.txt
-
+	 	 
 	 # go back to original folder
 	 cd ../../../../fortran_code
 
@@ -117,11 +86,11 @@ for i in $(seq 1 $imp); do
 	 cd results/amoeba_sobol$n/startpoint_$i/fortran_code
 
       # overwrite number of Sobol points generated / kept on config file
-	echo "amoeba dim7 sobol is $n, kept is $m and iter is" $i
-	sed -i "28s/.*/7, 297, -1, ${n[@]}, ${m[@]}, 0, -1/g" config.txt
-
-	# go back to original folder
-	cd ../../../../fortran_code
+	 echo "amoeba dim7 sobol is $n, kept is $m and iter is" $i
+	 sed -i "28s/.*/7, 297, -1, ${n[@]}, ${m[@]}, 0, -1/g" config.txt
+		 
+	 #go back to original folder
+	 cd ../../../../fortran_code
 
 
      done
@@ -130,31 +99,33 @@ done
 cd ../results
 
 # run optimimization in each folder
-for i in $(seq 1 $imp); do
-	for j in $(seq 0 $length); do
- 		n=${SobolList[$j]}
-
+for i in $(seq 0 $length); do 
+	for j in $(seq 1 $imp); do
+ 		n=${SobolList[$i]}
+	
 	 # go to new folder
-	 cd bobyqa_sobol$n/startpoint_$i/fortran_code
+	 cd bobyqa_sobol$n/startpoint_$j/fortran_code
 
-	 # run minimization with Bobyqa algo on Yale cluster
-	 bsub -q $queue -W $timelimit ./GlobalSearch 0 config.txt b &
+	 # run minimization with dfls. comment this out if only running amoeba
+	 ./GlobalSearch 0 config.txt b & 
+	 
+	 # go back to folder results
+	 cd ../../../
+	 
+	 # go to new folder
+	 cd amoeba_sobol$n/startpoint_$j/fortran_code
 
+	 # run minimization with amoeba. comment this out if only running dfls
+	 ./GlobalSearch 0 config.txt a & 
+	 
 	 # go back to folder results
 	 cd ../../../
 
-	 # go to new folder
-	 cd amoeba_sobol$n/startpoint_$i/fortran_code
-
-	 # run minimization with Amoeba algo on Yale cluster
-	 bsub -q $queue -W $timelimit ./GlobalSearch 0 config.txt a &
-
-	 # go back to folder results
-	 cd ../../../
-
+	 #wait
+	 
      done
-
 done
 
+wait
 
 echo "done."

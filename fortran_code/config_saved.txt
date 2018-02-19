@@ -12,7 +12,7 @@
 ! 	1) # parameters - The dimension of the search space for minimization (must be > 0)
 ! 	2) # moments targetting - ???
 ! 	3) maximum evaluations - the maximum number of evaluations the minimization routine will execute
-!                            (if -1, then equals 400*(nx+1))
+!                            (if -1, then equals 40*(nx+1))
 ! 	4) # draws - the number of sobol points to generate (if -1, then equals 500)
 ! 	5) maximum points - the number of sobol points to search over for global extreme (should be
 !                       less than # draws) ( if -1, then equals min(200, #draws) )
@@ -25,7 +25,7 @@
 !                      (if -1, then default to all i.e. maximum points)
 !
 !# parameters, # moments targetting, # simulated indiv., maximum evaluations, # draws, maximum points, selectType, lotteryPoints
-7, 297, -1, 200, 20, 0, -1
+7, 297, -1, 10, 2, 0, -1
 !
 ! for each parameter, the range of values. This specifies the values from which the sobol
 ! points are selected. These lines are mandatory
@@ -42,13 +42,13 @@
 ! for each parameter, the initial guess. These lines are mandatory
 ! Note: If simply updating sobol points, then these values are ignored
 ! Do not separate these parameters with any comments
-  0.385839343    
-  0.886127710    
-  0.183947191    
- -0.339378774    
-  0.754243970    
-  0.947379947    
-  0.709114552    
+0.1
+0.8
+.3
+-.4
+.01
+.01
+.1
 !
 ! for each parameter, the parameter bounds. These specify the absolute
 ! maximum and minimum values for which we should evaluate the functions.
