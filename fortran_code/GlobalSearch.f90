@@ -532,6 +532,7 @@ contains
           write(111,8111) bestValue, bestParam
         close(111)
 8111    format(200f40.20) ! (aa)
+
         ! added this to replace both files monteCarloGOPA and monteCarloGOPAmin
         open(unit = 112, file = "resultsMC.dat", position = "append", STATUS='unknown')
         write(111,8112) alg, fe_counter, cpuTime, p_maxpoints, p_qr_ndraw, nsim, nhhsim, p_nx, &
