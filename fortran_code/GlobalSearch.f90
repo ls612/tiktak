@@ -50,9 +50,9 @@ PROGRAM GlobalSearch
     IMPLICIT NONE
 
     ! command line options
-    LOGICAL ::isWarm           ! if this is a warm start or not
+    LOGICAL ::isWarm            ! if this is a warm start or not
     LOGICAL :: updatePoints     ! if this instance invokation is to update the points
-    INTEGER(I4B) :: alg         ! the default algorithm this instance will use for
+    INTEGER(I4B) :: alg         ! the algorithm this instance will use for
                                 ! minimizing the objective function
 
     ! temporary variables
@@ -71,15 +71,20 @@ PROGRAM GlobalSearch
     ! For timing
     REAL(SP):: start, finish
 
-    ! added by AA TK
+    ! variables returned by the algorithm (argmin: bestParam; min: bestValue)
     REAL(DP), DIMENSION(:) , ALLOCATABLE	:: bestParam
     REAL(DP)			:: bestValue
 
     call cpu_time(start)
 
+    ! assigning the default algorithm. will be changed below
     alg = p_default_alg
+
+    ! initialize whatever has to be done for the value function
     print*,"calling initial0"
     call initial0
+
+    ! read the command line
     call parseCommandLine()
 
     ! Random sequence
@@ -129,13 +134,13 @@ PROGRAM GlobalSearch
     driver = getInit()
     allocate(qrdraw(p_nx), trial(p_nx, p_qr_ndraw))
 
-    ! addded AA TK
+    ! allocates the argmin that will be found by the algorithm
     allocate(bestParam(p_nx))
 
     IF (setState(2, seqNo)) THEN
         !If this process is able to set the state, then it must be the "driver"
         !So generate sobol points, etc.
-        call insobl(p_nx, p_qr_ndraw)
+        call insobl(p_nx, p_qr_ndraw) ! generates p_qr_ndraw Sobol points of dimension p_nx
         DO i = 1,p_qr_ndraw
             CALL I4_SOBOL(p_nx,qrdraw)
             trial(:,i) = p_range(:,1)+qrdraw*(p_range(:,2)-p_range(:,1))
@@ -246,13 +251,6 @@ PROGRAM GlobalSearch
                 ! perform the last optimization
                 IF(setState(p_exitState,seqNo)) THEN
                     call lastSearch(seqNo)
-                    !call cpu_time(finish)
-                    !cpuTime = finish-start
-                    !open(unit = 111, file = "monteCarloGOPA.dat", position = "append", STATUS='unknown')
-                    !we write out algorithm indicator (writes 1 or 0 where 1=amoeba and 0=bobyqa, then we write function evaluation counter, cputime,
-                    !number of sobols that are kept to start local searches, and number of sobols overall that are drawn.
-                    !write(111,*) alg, fe_counter, cpuTime, p_maxpoints, p_qr_ndraw, nsim, nhhsim, p_nx
-                    !close(111)
                 ELSE
                     call statePause(currentState)
                 END IF
@@ -524,11 +522,6 @@ contains
         write(fileDesc,7451) i, i, fn_val, evalParam
         call myclose(fileDesc)
 
-        ! addeed this to print in a file the global argmin and fmin (AA and TK)
-!    	IF (fn_val > bestValue) THEN
-!       	    fn_val = bestValue
-!            evalParam = bestParam
-!	    ENDIF
     	IF (fn_val < bestValue) THEN
        	    bestValue = fn_val
             bestParam = evalParam
@@ -536,11 +529,16 @@ contains
 
         ! addeed this to print in a file the global argmin and fmin (AA and TK): note that the last entry (line) in searchResults might therefore be different from the final result reported below
         open(unit = 111, file = "monteCarloGOPAmin.dat", position = "append", STATUS='unknown')
-        	!write(111,8111) fn_val, evalParam
           write(111,8111) bestValue, bestParam
         close(111)
 8111    format(200f40.20) ! (aa)
-
+        ! added this to replace both files monteCarloGOPA and monteCarloGOPAmin
+        open(unit = 112, file = "resultsMC.dat", position = "append", STATUS='unknown')
+        write(111,8112) alg, fe_counter, cpuTime, p_maxpoints, p_qr_ndraw, nsim, nhhsim, p_nx, &
+        & p_init(1), p_init(2), p_init(3), p_init(4), p_init(5), p_init(6), p_init(7), &
+        & bestValue, bestParam
+        close(112)
+8112    format(8I30,200f40.20) ! (aa)
 
         return
 
