@@ -1,5 +1,9 @@
 ! OBJECTIVE.f90 contains the simulation and objective 
 !               (model-data distance) function
+! This file must contain:
+!   function objFun : used by amoeba
+!   subroutine dfovec: used by dfls
+!   other subroutines are specific to our income process function
 ! --------------------------------------------------------------------
 ! --------------------------------------------------------------------
 
@@ -24,13 +28,13 @@ use, intrinsic :: iso_c_binding, only: c_int
    end interface
 
     real(8), parameter:: MISSING = -99.9
-  REAL(DP) :: eps=epsilon(1.0_DP)
-	REAL(SP), DIMENSION(:), POINTER :: fmin_fvecp
+    REAL(DP) :: eps=epsilon(1.0_DP)
+    REAL(SP), DIMENSION(:), POINTER :: fmin_fvecp
 
 contains
 
 FUNCTION getPenalty(theta)
-!LS: new function for penalty processing
+!new function for penalty processing (LS)
 use genericParams
 implicit none
 
@@ -58,15 +62,8 @@ use genericParams
 implicit none
 
     REAL(DP),DIMENSION(p_nx),INTENT(IN) :: theta
-    REAL(DP),DIMENSION(p_nx)            :: pencons 
-    REAL(DP)                            :: objFun0(1,1), objFun, penalty
-    REAL(DP),DIMENSION(p_nmom)          :: Fout, FoutW
-    REAL(DP),DIMENSION(p_nmom,1)        :: F,FW
-    REAL(DP),DIMENSION(p_nmom,p_nmom)   :: W, Wsqr
-
-    integer :: ii
-
-    storeTheta=theta
+    REAL(DP)                            :: objFun0(1,1), objFun
+    REAL(DP),DIMENSION(p_nmom)          :: Fout
 
     call dfovec(p_nx,p_nmom,theta,Fout)
 
@@ -163,8 +160,7 @@ IMPLICIT NONE
     INTEGER, INTENT(IN)     :: np, nm          
 	!LS: New vars
 	integer :: ii
-    REAL(DP),DIMENSION(p_nmom,1)        :: F,FW
-    REAL(DP),DIMENSION(p_nmom,p_nmom)   :: W, Wsqr    
+    REAL(DP),DIMENSION(nm,nm)   :: W    
 	!LS: End New vars
     REAL(DP), DIMENSION(np), INTENT(IN)  :: x
     REAL(DP), DIMENSION(nm,1),INTENT(OUT) :: Fnout
@@ -784,10 +780,10 @@ END FUNCTION random_normal
 
 end subroutine 
 
-! not sure about this one, Arun had it, and I don't want to mess up the algorithm
+! call to GetData, possibly other subroutines, to load data
 subroutine initial0
-implicit none
-call GetData
+    implicit none
+    call GetData
 end subroutine
 
 end MODULE objective
