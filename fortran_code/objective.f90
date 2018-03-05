@@ -222,8 +222,8 @@ IMPLICIT NONE
 
     Fnout = matmul(sqrt(W),Fnout)
 	
-    mytime=1;
-    dur=myFortSleep(mytime);
+    mytime=3;
+    !dur=myFortSleep(mytime);
 
 END SUBROUTINE dfovec
 
