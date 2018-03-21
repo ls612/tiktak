@@ -539,7 +539,7 @@ contains
         & p_init(1), p_init(2), p_init(3), p_init(4), p_init(5), p_init(6), p_init(7), &
         & bestValue, bestParam
         close(112)
-8112    format(8I30,200f40.20) ! (aa)
+8112    format(2I30,f40.20,5I30,200f40.20) ! (aa)
 
         return
 
