@@ -14,7 +14,7 @@ rm -rf ../results
 
 #BEGIN USER MODIFIABLE DATA
 dim=7 #Number of dimensions of the objective
-SobolList=(40 70 100 200 300 400 500 600 700 800) #List of quantities of sobol points to try
+SobolList=(40 70 100 200 400 800 1600) #List of quantities of sobol points to try
 length=${#SobolList[@]} 
 length=$((length-1)) # length of SobolList (minus 1 because indexation starts at 0)
 imp=10   # number of trials per quantity of sobol points

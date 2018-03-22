@@ -513,7 +513,7 @@ contains
         call writeToLog(errorString)
 
         rhobeg  = minval(p_bound(:,2)-p_bound(:,1))/10.0_DP
-        rhoend  = 1.0D-3/4.0_dp
+        rhoend  = 1.0D-8/4.0_dp
         call bobyqa_h(p_nx,p_ninterppt,evalParam,p_bound(:,1),p_bound(:,2),rhobeg,rhoend,p_iprint,p_maxeval,p_wspace,p_nmom)
 
         fn_val = objFun(evalParam)
