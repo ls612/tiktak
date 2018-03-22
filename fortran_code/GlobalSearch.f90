@@ -486,7 +486,7 @@ contains
         !so far. It always uses the same algorithm, bobyqa.
         implicit none
         INTEGER(I4B), INTENT(IN) :: seqNo
-        INTEGER(I4B) :: i, openStat
+        INTEGER(I4B) :: i, openStat, half_maxeval
         REAL(DP), DIMENSION(p_nx) :: evalParam
         REAL(DP) :: rhobeg, rhoend, fn_val
 
@@ -514,7 +514,8 @@ contains
 
         rhobeg  = minval(p_bound(:,2)-p_bound(:,1))/10.0_DP
         rhoend  = 1.0D-8/4.0_dp
-        call bobyqa_h(p_nx,p_ninterppt,evalParam,p_bound(:,1),p_bound(:,2),rhobeg,rhoend,p_iprint,p_maxeval,p_wspace,p_nmom)
+		half_maxeval = p_maxeval/2
+        call bobyqa_h(p_nx,p_ninterppt,evalParam,p_bound(:,1),p_bound(:,2),rhobeg,rhoend,p_iprint,half_maxeval,p_wspace,p_nmom) !LS: Half max eval for polishing search
 
         fn_val = objFun(evalParam)
 
